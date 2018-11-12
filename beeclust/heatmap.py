@@ -4,8 +4,11 @@ import collections
 from beeclust.constants import Constant
 
 
-Vertex = collections.namedtuple("Vertex", ["x", "y", "steps"])
-
+class Vertex(collections.namedtuple("Vertex", ["x", "y", "steps"])):
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+    def __hash__(self):
+        return hash(f'{self.x}:{self.y}')
 
 class HeatMap:
 
@@ -44,6 +47,8 @@ class HeatMap:
                     heating = (1 / dist_heater) * (self.T_heater - self.T_env)
                     cooling = (1 / dist_cooler) * (self.T_env - self.T_cooler)
 
+                    print(self.T_env + self.k_temp * (max(heating, 0) - max(cooling, 0)))
+
                     heatmap[x, y] = self.T_env + self.k_temp * (max(heating, 0) - max(cooling, 0))
 
         self.heatmap = heatmap
@@ -67,7 +72,7 @@ class HeatMap:
 
             if vertex not in visited:
 
-                visited.add((vertex.x, vertex.y))
+                visited.add(vertex)
 
                 if self.map[vertex.x, vertex.y] == Constant.HEATER and vertex.steps < dist_heater:
                     dist_heater = vertex.steps
@@ -78,8 +83,6 @@ class HeatMap:
 
                 adj_vertecies = self.adjacent_cells(vertex.x, vertex.y)
 
-                #print(adj_vertecies)
-
                 for adj_vertex in adj_vertecies:
                     queue.append(Vertex(x=adj_vertex [0], y=adj_vertex[1], steps=vertex.steps + 1))
 
@@ -88,12 +91,19 @@ class HeatMap:
 
     def adjacent_cells(self, x, y):
 
-        cells = [(x, y + 1), (x + 1, y), (x, y - 1), (x - 1, y)]
+        cells = [(x, y + 1), (x + 1, y), (x, y - 1), (x - 1, y),
+                 (x + 1, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1)]
 
-        #print(self.map.shape)
-        #print(cells)
+        max_x = self.map.shape[0]
+        max_y = self.map.shape[1]
 
-        return list(filter(lambda x: x[0] < self.map.shape[0] or x[1] < self.map.shape[1] or x[0] > 0 or x[0] > 0, cells))
+        my_cells = []
+        for cell in cells:
+            if cell[0] < max_x and cell[1] < max_y and cell[0] >= 0 and cell[1] >= 0:
+                my_cells.append(cell)
+
+        return my_cells
+
 
 if __name__ == "__main__":
 
