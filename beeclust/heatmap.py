@@ -78,6 +78,8 @@ class HeatMap:
 
                 adj_vertecies = self.adjacent_cells(vertex.x, vertex.y)
 
+                #print(adj_vertecies)
+
                 for adj_vertex in adj_vertecies:
                     queue.append(Vertex(x=adj_vertex [0], y=adj_vertex[1], steps=vertex.steps + 1))
 
@@ -88,9 +90,10 @@ class HeatMap:
 
         cells = [(x, y + 1), (x + 1, y), (x, y - 1), (x - 1, y)]
 
-        print(list(filter(lambda x: x[0] > self.map.shape[0] or x[1] > self.map.shape[1], cells)))
+        #print(self.map.shape)
+        #print(cells)
 
-        return list(filter(lambda x: x[0] > self.map.shape[0] or x[1] > self.map.shape[1], cells))
+        return list(filter(lambda x: x[0] < self.map.shape[0] or x[1] < self.map.shape[1] or x[0] > 0 or x[0] > 0, cells))
 
 if __name__ == "__main__":
 

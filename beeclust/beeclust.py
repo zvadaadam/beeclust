@@ -79,7 +79,7 @@ class BeeClust:
             if not bee in visited:
                 queue.append(bee)
                 cluster = []
-                while queue:
+                while len(queue) > 0:
                     cur_bee = queue.pop()
                     visited.add(cur_bee)
                     cluster.append(cur_bee)
