@@ -17,21 +17,18 @@ class BeeClust:
         if not (isinstance(p_changedir, float) or isinstance(p_changedir, int)):
             raise TypeError('ERROR p_changedir')
         if not (0. <= p_changedir <= 1.):
-            print(p_changedir)
             raise ValueError('Value Error, probability p_changedir cannot be negative or grater than 1.')
         self.p_changedir = p_changedir
 
         if not (isinstance(p_wall, float) or isinstance(p_wall, int)):
             raise TypeError('ERROR p_wall')
         if not (0. <= p_wall <= 1.):
-            print(p_wall)
             raise ValueError('Value Error, probability p_wall cannot be negative or grater than 1.')
         self.p_wall = p_wall
 
         if not (isinstance(p_meet, float) or isinstance(p_meet, int)):
             raise TypeError('ERROR p_meet')
         if not (0. <= p_meet <= 1.):
-            print(p_meet)
             raise ValueError('Value Error, probability p_meet cannot be negative or grater than 1.')
         self.p_meet = p_meet
 
@@ -107,11 +104,13 @@ class BeeClust:
                 cluster = []
                 while len(queue) > 0:
                     cur_bee = queue.pop()
-                    visited.add(cur_bee)
-                    cluster.append(cur_bee)
+                    if cur_bee not in cluster:
 
-                    for adj_bee in self.adjacent_bees(cur_bee[0], cur_bee[1], bees):
-                        queue.append(adj_bee)
+                        visited.add(cur_bee)
+                        cluster.append(cur_bee)
+
+                        for adj_bee in self.adjacent_bees(cur_bee[0], cur_bee[1], bees):
+                            queue.append(adj_bee)
 
                 swarms.append(cluster)
 
@@ -142,6 +141,16 @@ class BeeClust:
             x, y = bee[0], bee[1]
             map_value = self.map[x, y]
 
+            if np.random.rand() < self.p_changedir or map_value == -1:
+                moves = [Constant.BEE_UP, Constant.BEE_DOWN, Constant.BEE_LEFT, Constant.BEE_RIGHT]
+                if map_value in moves:
+                    moves.remove(map_value)
+                bee_direction = np.random.choice(moves)
+                self.map[x, y] = bee_direction
+                if map_value == -1:
+                    continue
+                map_value = bee_direction
+
             if map_value == Constant.BEE_UP:
                 moved += self.move_bee(bee=bee, to_x=bee[0] - 1, to_y=bee[1])
             elif map_value == Constant.BEE_DOWN:
@@ -149,14 +158,9 @@ class BeeClust:
             elif map_value == Constant.BEE_RIGHT:
                 moved += self.move_bee(bee=bee, to_x=bee[0], to_y=bee[1] + 1)
             elif map_value == Constant.BEE_LEFT:
-                moved += self.move_bee(bee=bee, to_x=bee[0] + 1, to_y=bee[1] - 1)
-            elif map_value == -1: # WAITING
-                moves = [Constant.BEE_UP, Constant.BEE_DOWN, Constant.BEE_LEFT, Constant.BEE_RIGHT]
-                bee_direction = np.random.choice(moves)
-                self.map[x,y] = bee_direction
+                moved += self.move_bee(bee=bee, to_x=bee[0], to_y=bee[1] - 1)
             elif map_value < -1:
                 self.map[x,y] += 1
-
 
         return moved
 
@@ -172,14 +176,15 @@ class BeeClust:
 
     def adjacent_bees(self, x, y, bees):
         adj_bees = []
-        if (bees[x] + 1, bees[y]) in bees:
-            adj_bees.append(bees[x], bees[y])
-        if (bees[x] - 1, bees[y]) in bees:
-            adj_bees.append(bees[x], bees[y])
-        if (bees[x], bees[y] + 1) in bees:
-            adj_bees.append(bees[x], bees[y])
-        if (bees[x], bees[y] - 1) in bees:
-            adj_bees.append(bees[x], bees[y])
+
+        if (x + 1, y) in bees:
+            adj_bees.append((x+1, y))
+        if (x - 1, y) in bees:
+            adj_bees.append((x-1, y))
+        if (x, y + 1) in bees:
+            adj_bees.append((x, y+1))
+        if (x, y - 1) in bees:
+            adj_bees.append((x, y-1))
 
         return adj_bees
 
@@ -191,11 +196,14 @@ class BeeClust:
 
         is_moving = False
 
-        if new_x < 0 or new_x > self.map.shape[0] or self.map[new_x, new_y] in [Constant.WALL, Constant.COOLER, Constant.HEATER]:
-            self.hit_obstacle()
+        if new_x < 0 or new_x >= self.map.shape[0] or new_y < 0 or new_y >= self.map.shape[1] or self.map[new_x, new_y] in [Constant.WALL, Constant.COOLER, Constant.HEATER]:
+            print('Hit Obstalce')
+            self.hit_obstacle(bee)
         elif self.map[new_x, new_y] < 0 or Constant.BEE_UP <= self.map[new_x, new_y] <= Constant.BEE_LEFT:
-            self.hit_bee()
+            print('Hit bee')
+            self.hit_bee(bee)
         else:
+            print(f'MOVING {x},{y} -> {new_x},{new_y}')
             is_moving = True
             self.map[new_x, new_y] = self.map[x, y]
             self.map[x, y] = Constant.EMPTY
