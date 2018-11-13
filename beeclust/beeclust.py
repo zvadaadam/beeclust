@@ -10,26 +10,41 @@ class BeeClust:
 
         if not isinstance(map, np.ndarray):
             raise TypeError('ERROR map')
+        if map.ndim != 2:
+            raise ValueError('Value Error, map should be 2dim!')
         self.map = map
 
         if not (isinstance(p_changedir, float) or isinstance(p_changedir, int)):
             raise TypeError('ERROR p_changedir')
+        if not (0. <= p_changedir <= 1.):
+            print(p_changedir)
+            raise ValueError('Value Error, probability p_changedir cannot be negative or grater than 1.')
         self.p_changedir = p_changedir
 
         if not (isinstance(p_wall, float) or isinstance(p_wall, int)):
             raise TypeError('ERROR p_wall')
+        if not (0. <= p_wall <= 1.):
+            print(p_wall)
+            raise ValueError('Value Error, probability p_wall cannot be negative or grater than 1.')
         self.p_wall = p_wall
 
-        if not (isinstance(p_wall, float) or isinstance(p_wall, int)):
-            raise TypeError('ERROR p_wall')
+        if not (isinstance(p_meet, float) or isinstance(p_meet, int)):
+            raise TypeError('ERROR p_meet')
+        if not (0. <= p_meet <= 1.):
+            print(p_meet)
+            raise ValueError('Value Error, probability p_meet cannot be negative or grater than 1.')
         self.p_meet = p_meet
 
         if not (isinstance(k_temp, float) or isinstance(k_temp, int)):
             raise TypeError('ERROR k_temp')
+        if not (0 < k_temp):
+            raise ValueError('Value Error, coef cannot be negative.')
         self.k_temp = k_temp
 
         if not (isinstance(k_stay, float) or isinstance(k_stay, int)):
             raise TypeError('ERROR k_stay')
+        if not (0 < k_stay):
+            raise ValueError('Value Error, coef cannot be negative.')
         self.k_stay = k_stay
 
         if not (isinstance(T_ideal, float) or isinstance(T_ideal, int)):
@@ -44,13 +59,24 @@ class BeeClust:
             raise TypeError('ERROR T_cooler')
         self.T_cooler = T_cooler
 
-        if not (isinstance(p_wall, float) or isinstance(T_env, int)):
+        if not (isinstance(T_env, float) or isinstance(T_env, int)):
             raise TypeError('ERROR T_env')
         self.T_env = T_env
 
         if not (isinstance(min_wait, float) or isinstance(min_wait, int)):
             raise TypeError('ERROR min_wait')
+        if min_wait < 0:
+            raise ValueError('Value Error, min_wait cannot be negative!')
         self.min_wait = min_wait
+
+
+        if (T_heater < T_cooler):
+            raise ValueError('Value Error, T_heater is not colder than cooler')
+        if (T_heater < T_env):
+            raise ValueError('Value Error, T_env cannot be colder than heater')
+        if (T_cooler > T_env):
+            raise ValueError('Value Error, T_cooler cannot be colder than cooler')
+
 
         self.heatmap_obj = HeatMap(map, T_heater, T_cooler, T_env, k_temp)
 
@@ -84,7 +110,7 @@ class BeeClust:
                     visited.add(cur_bee)
                     cluster.append(cur_bee)
 
-                    for adj_bee in self.adjacent_bees(cur_bee[0], cur_bee[1]):
+                    for adj_bee in self.adjacent_bees(cur_bee[0], cur_bee[1], bees):
                         queue.append(adj_bee)
 
                 swarms.append(cluster)

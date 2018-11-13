@@ -47,8 +47,6 @@ class HeatMap:
                     heating = (1 / dist_heater) * (self.T_heater - self.T_env)
                     cooling = (1 / dist_cooler) * (self.T_env - self.T_cooler)
 
-                    print(self.T_env + self.k_temp * (max(heating, 0) - max(cooling, 0)))
-
                     heatmap[x, y] = self.T_env + self.k_temp * (max(heating, 0) - max(cooling, 0))
 
         self.heatmap = heatmap
