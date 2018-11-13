@@ -197,13 +197,10 @@ class BeeClust:
         is_moving = False
 
         if new_x < 0 or new_x >= self.map.shape[0] or new_y < 0 or new_y >= self.map.shape[1] or self.map[new_x, new_y] in [Constant.WALL, Constant.COOLER, Constant.HEATER]:
-            print('Hit Obstalce')
             self.hit_obstacle(bee)
         elif self.map[new_x, new_y] < 0 or Constant.BEE_UP <= self.map[new_x, new_y] <= Constant.BEE_LEFT:
-            print('Hit bee')
             self.hit_bee(bee)
         else:
-            print(f'MOVING {x},{y} -> {new_x},{new_y}')
             is_moving = True
             self.map[new_x, new_y] = self.map[x, y]
             self.map[x, y] = Constant.EMPTY
